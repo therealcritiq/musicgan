@@ -17,12 +17,12 @@ class Generator():
         model = keras.Sequential([
             keras.Input(shape=x.shape), # TODO: need to fix this input shape to make sure it includes the num of filters/channels
             *self._conv2d_doubled(
-                kernel_size=hparams.get("kernel_size"),
+                kernel_size=hparams.kernel_size,
                 filters=2,
                 padding="SAME"
             ),
             *self._compose_upsample_conv2d_blocks(
-                num_blocks=hparams.get('num_resolutions')
+                num_blocks=hparams.num_resolutions
             ),
             # TODO: OUTPUT DENSE 
         ])
@@ -88,7 +88,7 @@ class Generator():
         ]
     
     def _upsample(self, block_id):
-        scale = hparams.get('scale_base', 2)**(self._num_resolutions - block_id)
+        scale = hparams.scale_base**(self._num_resolutions - block_id)
         return layers.Lambda(
             lambda images: tf.batch_to_space(
                     tf.tile(images, [scale**2, 1, 1, 1]),
