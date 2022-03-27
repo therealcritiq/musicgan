@@ -1,3 +1,4 @@
+import math
 import numpy as np
 import tensorflow as tf
 import pitch_counts
@@ -13,6 +14,11 @@ def he_initializer_scale(shape, slope=1.0):
     """
     fan_in = np.prod(shape[:-1])
     return np.sqrt(2. / ((1. + slope**2) * fan_in))
+
+# https://github.com/magenta/magenta/blob/f73ff0c91f0159a925fb6547612199bb7c915248/magenta/models/gansynth/lib/networks.py#L285
+def get_num_filters(block_id, fmap_base=4096, fmap_decay=1.0, fmap_max=256):
+    """Computes number of filters of block `block_id`."""
+    return int(min(fmap_base / math.pow(2.0, block_id * fmap_decay), fmap_max))
 
 # https://github.com/magenta/magenta/blob/f73ff0c91f0159a925fb6547612199bb7c915248/magenta/models/gansynth/lib/train_util.py#L144
 def generate_latent_vector_z(batch_size, latent_vector_size=hparams.latent_vector_size):
