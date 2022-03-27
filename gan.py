@@ -8,7 +8,7 @@ class GAN():
         pitch_one_hot_labels = utils.get_pitch_one_hot_labels(batch_size)
         z = utils.generate_latent_vector_z(batch_size)
         generator_input = tf.concat(z, pitch_one_hot_labels)
-        generator = Generator(generator_input)
+        self.generator = Generator(generator_input)
 
         # g_fn = lambda x: generator(x, **config)
         # self.model = tfgan.gan_model(
@@ -17,3 +17,5 @@ class GAN():
         #     real_data=real_images,
         #     generator_inputs=(noises, gen_one_hot_labels)
         # )
+    def train(self):
+        pass
