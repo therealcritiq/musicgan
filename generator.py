@@ -53,7 +53,6 @@ class Generator():
                 he_initializer_slope=1.0,
                 use_weight_scaling=True):
         def build_conv2d_and_scale(input):
-            # TODO: need to figure out how to grab the input shape from within a sequential block
             kernel_shape = kernel_size + [input.shape.as_list()[3], filters],
             kernel_scale = he_initializer_scale(kernel_shape, he_initializer_slope)
             init_scale, post_scale = kernel_scale, 1.0
@@ -61,8 +60,6 @@ class Generator():
                 init_scale, post_scale = post_scale, init_scale
             
             kernel_initializer = tf.random_normal_initializer(stddev=init_scale)
-            
-            # lambda x: layers.pixel_norm(tf.nn.leaky_relu(x))
 
             return [
                 layers.Conv2D(
