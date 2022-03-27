@@ -18,11 +18,19 @@ class Generator():
         """
         model = keras.Sequential([
             keras.Input(shape=x.shape), # TODO: need to fix this input shape to make sure it includes the num of filters/channels
-            *self._conv2d_doubled(
-                kernel_size=hparams.kernel_size,
-                filters=get_num_filters(1),
-                padding="SAME"
+            layers.Lambda(lambda x: tf.expand_dims(tf.expand_dims(x, 1), 1)),
+            layers.Lambda(pixel_norm),
+            layers.Lambda(
+                lambda x: tf.pad(
+                    x, 
+                    [[0] * 2, [hparams.start_resolutions[0] - 1] * 2,
+                    [hparams.start_resolutions[1] - 1] * 2, [0] * 2]
+                )
             ),
+            # TODO: replace the above padding lambda with the a call to layers.Pad instead
+            # layers.Pad(),
+            self._conv2d(kernel_size=hparams.start_resolutions, filters=get_num_filters(1), padding="VALID"),
+            self._conv2d(filters=get_num_filters(1)),
             *self._compose_upsample_conv2d_blocks(num_blocks=self.num_blocks),
             # TODO: OUTPUT DENSE 
         ])
@@ -34,7 +42,6 @@ class Generator():
             blocks.extend(
                 self._upsample_conv2d_block(
                     conv2d_params={
-                        "kernel_size":self.kernel_size,
                         "filters": get_num_filters(i + 1),
                         "padding": "SAME"
                     },
@@ -47,7 +54,7 @@ class Generator():
 
     def _conv2d(self,
                 filters,
-                kernel_size,
+                kernel_size=hparams.kernel_size,
                 strides=(1, 1),
                 padding='SAME',
                 he_initializer_slope=1.0,
