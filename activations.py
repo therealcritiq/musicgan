@@ -11,6 +11,6 @@ def pixel_norm(images, epsilon=1.0e-8):
     Returns:
     A 4D `Tensor` with pixel-wise normalized channels.
     """
-    return images * tf.rsqrt(
+    return images * tf.math.rsqrt(
         tf.reduce_mean(tf.square(images), axis=3, keepdims=True) + epsilon
     )

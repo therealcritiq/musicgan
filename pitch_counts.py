@@ -1,5 +1,5 @@
 # https://github.com/magenta/magenta/blob/f73ff0c91f0159a925fb6547612199bb7c915248/magenta/models/gansynth/lib/datasets.py#L124
-{
+pitch_counts = {
     24: 551,
     25: 545,
     26: 561,
