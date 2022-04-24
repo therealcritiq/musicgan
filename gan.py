@@ -1,5 +1,6 @@
 # import tensorflow_gan as tfgan
 import tensorflow as tf
+from discriminator import Discriminator
 from generator import Generator
 import utils
 
@@ -9,6 +10,11 @@ class GAN():
         noise = utils.sample_random_noise_vector(batch_size)
         generator_input = tf.concat((noise, pitch_one_hot_labels), axis=1)
         self.generator = Generator(generator_input)
+
+
+        real_images = load_real_mel_spec()
+        real_images = utils.blend_images(real_images, 6, num_blocks=7)
+        self.discriminator = Discriminator()
 
         # g_fn = lambda x: generator(x, **config)
         # self.model = tfgan.gan_model(

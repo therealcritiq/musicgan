@@ -28,6 +28,13 @@ def upscale_input(input, scale=hparams.scale_base):
         block_shape=scale
     )
 
+def downscale_input(input, scale=hparams.scale_base):
+    return tf.nn.avg_pool(
+      input,
+      ksize=[1, scale, scale, 1],
+      strides=[1, scale, scale, 1],
+      padding='VALID')
+
 def get_scale_factor(block_id):
     return hparams.scale_base**(hparams.num_resolutions - block_id)
 
@@ -55,3 +62,39 @@ def get_pitch_one_hot_labels(batch_size):
         tf.random.categorical(tf.math.log([tf.cast(counts, tf.float32)]), batch_size), [batch_size])
     one_hot_labels = tf.one_hot(indices, depth=len(pitches), dtype=tf.float32)
     return one_hot_labels
+
+def get_kernel_scales(
+    kernel_shape=None,
+    he_initializer_slope=None,
+    use_weight_scaling=False
+):
+    kernel_scale = he_initializer_scale(kernel_shape, he_initializer_slope)
+    init_scale, post_scale = kernel_scale, 1.0
+    if use_weight_scaling:
+        init_scale, post_scale = post_scale, init_scale
+    return init_scale, post_scale
+
+# https://github.com/magenta/magenta/blob/f73ff0c91f0159a925fb6547612199bb7c915248/magenta/models/gansynth/lib/networks.py#L256
+def blend_images(x, progress, num_blocks):
+  """Blends images of different resolutions according to `progress`.
+  When training `progress` is at a stable stage for resolution r, returns
+  image `x` downscaled to resolution r and then upscaled to `final_resolutions`,
+  call it x'(r).
+  Otherwise when training `progress` is at a transition stage from resolution
+  r to 2r, returns a linear combination of x'(r) and x'(2r).
+  Args:
+    x: An image `Tensor` of NHWC format with resolution `final_resolutions`.
+    progress: A scalar float `Tensor` of training progress.
+    resolution_schedule: An object of `ResolutionSchedule`.
+    num_blocks: An integer of number of blocks.
+  Returns:
+    An image `Tensor` which is a blend of images of different resolutions.
+  """
+  x_blend = []
+  for block_id in range(1, num_blocks + 1):
+    alpha = generator_alpha(block_id, progress)
+    scale = get_scale_factor(block_id)
+    rescaled_x = upscale_input(
+        downscale_input(x, scale), scale)
+    x_blend.append(alpha * rescaled_x)
+  return tf.add_n(x_blend)
