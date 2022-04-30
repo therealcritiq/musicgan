@@ -2,6 +2,7 @@
 import tensorflow as tf
 from discriminator import Discriminator
 from generator import Generator
+from image_utils import load_audio_to_mel_spec
 import utils
 
 class GAN():
@@ -12,7 +13,7 @@ class GAN():
         self.generator = Generator(generator_input)
 
 
-        real_images = load_real_mel_spec()
+        real_images = load_audio_to_mel_spec()
         real_images = utils.blend_images(real_images, 6, num_blocks=7)
         self.discriminator = Discriminator()
 
