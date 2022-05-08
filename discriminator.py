@@ -9,21 +9,23 @@ import hparams
 
 
 class Discriminator(BaseModel):
-    def __init__(self, inputs, num_blocks=hparams.num_resolutions) -> None:
+    def __init__(self, latent_vector_size=hparams.latent_vector_size, num_blocks=hparams.num_resolutions) -> None:
         self.lods = []
         self.num_blocks = num_blocks
-        self.z = tf.concat(inputs, axis=1)
-        self.initial_x = tf_slim.flatten(self.z)
-        self.batch_size = int(self.z.shape[0])
+        # self.z = tf.concat(inputs, axis=1)
+        # self.initial_x = tf_slim.flatten(self.z)
+        # self.batch_size = int(self.z.shape[0])
+        self.latent_vector_size = latent_vector_size
         self.model = self._build_model(self.initial_x)
 
-    def _build_model(self, init_x):
+    def _build_model(self):
         model = keras.Sequential([
-            keras.Input(shape=init_x.shape[1]),
+            keras.Input(shape=(self.latent_vector_size,)),
             self._conv2d(kernel_size=(1, 1), filters=32, name="conv_final")[0],
             *self._compose_downsample_conv2d_blocks(num_blocks=self.num_blocks),
             CustomLambda(self._get_dense)
         ])
+        return model
     
     def _get_dense(self, x):
         # print('---x shape : -------------------- ', x.shape.as_list()[-1], ' and ---- ', x.shape[-1])

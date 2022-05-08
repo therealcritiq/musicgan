@@ -8,25 +8,24 @@ from activations import pixel_norm
 import hparams
 
 class Generator(BaseModel):
-    def __init__(self, inputs, num_blocks=hparams.num_resolutions) -> None:
+    def __init__(self, latent_vector_size=hparams.latent_vector_size, num_blocks=hparams.num_resolutions) -> None:
         self.lods = []
         self.num_blocks = num_blocks
-        self.z = tf.concat(inputs, axis=1)
-        self.initial_x = tf_slim.flatten(self.z)
-        self.batch_size = int(self.z.shape[0])
-        self.model = self._build_model(self.initial_x)
+        # self.z = tf.concat(inputs, axis=1)
+        # self.initial_x = tf_slim.flatten(self.z)
+        # self.batch_size = int(self.z.shape[0])
+        self.latent_vector_size = latent_vector_size
+        self.model = self._build_model()
     
-    def _build_model(self, init_x):
+    def _build_model(self):
         """
-        TODO: NEED TO FIX THE PARAMETERS FOR EACH OF THE CONV2D BLOCKS
-        TODO: update arch to mimic: https://github.com/magenta/magenta/blob/f73ff0c91f0159a925fb6547612199bb7c915248/magenta/models/gansynth/lib/networks.py#L362
         TODO: figure out if we need to use final_h and final_w (prob not though...)
         """
-        final_h, final_w = get_final_resolutions()
+        # final_h, final_w = get_final_resolutions()
         model = keras.Sequential([
             # TODO: need to fix this input shape to make sure it includes the num of filters/channels
             # although it might be ok since the model summary is looking fine
-            keras.Input(shape=init_x.shape[1]), 
+            keras.Input(shape=(self.latent_vector_size, )), 
             CustomLambda(lambda x: tf.expand_dims(tf.expand_dims(x, 1), 1), name="expand_dims"),
             CustomLambda(pixel_norm, name="pixel_norm_1"),
             CustomLambda(
@@ -55,6 +54,5 @@ class Generator(BaseModel):
             *self._compose_upsample_conv2d_blocks(num_blocks=self.num_blocks),
             self._conv2d(kernel_size=(1, 1), filters=2, name="conv_final", activation=tf.nn.tanh)[0]
         ])
-        self.model = model
         return model
     

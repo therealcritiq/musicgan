@@ -7,4 +7,4 @@ The code in this repository is a modified version of GANSynth
 
 # Uncomprehensive list of modifications
 - not running the 2nd iteration over blocks to_rgb (https://github.com/magenta/magenta/blob/f73ff0c91f0159a925fb6547612199bb7c915248/magenta/models/gansynth/lib/networks.py#L397)
-- 
+- not using alpha blending
