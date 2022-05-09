@@ -98,3 +98,41 @@ def blend_images(x, progress, num_blocks):
         downscale_input(x, scale), scale)
     x_blend.append(alpha * rescaled_x)
   return tf.add_n(x_blend)
+
+# https://github.com/magenta/magenta/blob/188bbf922aa36bc437ae45e99b2e5803074677dc/magenta/models/gansynth/lib/layers.py#L158
+def scalar_concat(tensor, scalar):
+  """Concatenates a scalar to the last dimension of a tensor.
+  Args:
+    tensor: A `Tensor`.
+    scalar: a scalar `Tensor` to concatenate to tensor `tensor`.
+  Returns:
+    A `Tensor`. If `tensor` has shape [...,N], the result R has shape
+    [...,N+1] and R[...,N] = scalar.
+  Raises:
+    ValueError: If `tensor` is a scalar `Tensor`.
+  """
+  ndims = tensor.shape.ndims
+  if ndims < 1:
+    raise ValueError('`tensor` must have number of dimensions >= 1.')
+  shape = tf.shape(tensor)
+  return tf.concat(
+      [tensor,
+       tf.ones([shape[i] for i in range(ndims - 1)] + [1]) * scalar],
+      axis=ndims - 1)
+
+def minibatch_mean_stddev(x):
+  """Computes the standard deviation average.
+  This is used by the discriminator as a form of batch discrimination.
+  Args:
+    x: A `Tensor` for which to compute the standard deviation average. The first
+        dimension must be batch size.
+  Returns:
+    A scalar `Tensor` which is the mean variance of variable x.
+  """
+  mean, var = tf.nn.moments(x, axes=[0])
+  del mean
+  r_mean = tf.reduce_mean(tf.sqrt(var + 1e-6))
+  # tensor = tf.convert_to_tensor([r_mean])
+  # tensor.set_shape((1,))
+  return r_mean
+  # return tensor

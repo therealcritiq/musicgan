@@ -1,9 +1,6 @@
 # import tensorflow_gan as tfgan
-from random import random
 import tensorflow as tf
 from tensorflow import keras
-from discriminator import Discriminator
-from generator import Generator
 from image_utils import load_audio_to_mel_spec
 import utils
 import hparams
@@ -11,20 +8,12 @@ import hparams
 class GAN(keras.Model):
     def __init__(self, latent_dim, generator, discriminator) -> None:
         super().__init__()
-        # self.batch_size = batch_size
         self.latent_dim = latent_dim
         self.d_loss_metric = keras.metrics.Mean(name="d_loss")
         self.g_loss_metric = keras.metrics.Mean(name="g_loss")
         self.generator = generator
         self.discriminator = discriminator
 
-        # g_fn = lambda x: generator(x, **config)
-        # self.model = tfgan.gan_model(
-        #     generator_fn=lambda inputs: g_fn(inputs)[0],
-        #     discriminator_fn=lambda images, unused_cond: d_fn(images)[0],
-        #     real_data=real_images,
-        #     generator_inputs=(noises, gen_one_hot_labels)
-        # )
     def compile(self, d_optimizer, g_optimizer, loss_fn):
         super(GAN, self).compile()
         self.d_optimizer = d_optimizer
@@ -83,3 +72,18 @@ class GAN(keras.Model):
             "d_loss": self.d_loss_metric.result(),
             "g_loss": self.g_loss_metric.result()
         }
+    
+class GANMonitor(keras.callbacks.Callback):
+    def __init__(self, num_img=3, latent_vector_size=hparams.latent_vector_size) -> None:
+        self.num_img = num_img
+        self.latent_vector_size = latent_vector_size
+
+    def on_epoch_end(self, epoch, logs=None):
+        random_latent_vectors = utils.sample_random_noise_vector(self.num_img, self.latent_vector_size)
+        generated_images = self.model.generator.model(random_latent_vectors)
+        generated_images *= 255
+        generated_images.numpy()
+
+        for i in range(self.num_img):
+            img = keras.utils.array_to_img(generated_images[i])
+            img.save(f'generated_mel_spec_{epoch:03d}_{i}.png')

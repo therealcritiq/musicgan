@@ -9,6 +9,7 @@ import hparams
 
 class Generator(BaseModel):
     def __init__(self, latent_vector_size=hparams.latent_vector_size, num_blocks=hparams.num_resolutions) -> None:
+        super(Generator, self).__init__(save_input_to_lods=True)
         self.lods = []
         self.num_blocks = num_blocks
         # self.z = tf.concat(inputs, axis=1)
