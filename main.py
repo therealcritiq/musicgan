@@ -13,7 +13,8 @@ gan = GAN(
     generator=generator,
     discriminator=discriminator
 )
-
+# print(gan.generator.model.summary())
+# print(gan.discriminator.model.summary())
 # gan.compile(
 #     d_optimizer=keras.optimizers.Adam(learning_rate=0.0001),
 #     g_optimizer=keras.optimizers.Adam(learning_rate=0.0001),

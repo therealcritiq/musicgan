@@ -54,6 +54,6 @@ class Generator(BaseModel):
             *self._conv2d(filters=get_num_filters(1)),
             *self._compose_upsample_conv2d_blocks(num_blocks=self.num_blocks),
             self._conv2d(kernel_size=(1, 1), filters=2, name="conv_final", activation=tf.nn.tanh)[0]
-        ])
+        ], name="Generator")
         return model
     

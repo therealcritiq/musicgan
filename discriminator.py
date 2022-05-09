@@ -44,7 +44,7 @@ class Discriminator(BaseModel):
                 activation=tf.nn.leaky_relu
             )[0],
             CustomLambda(self._get_dense)
-        ])
+        ], name="Discriminator")
         return model
     
     def _get_dense(self, x):
